@@ -1,0 +1,47 @@
+name: Build King Kong Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android NDK
+        run: |
+          sdkmanager "platforms;android-37" "ndk;29.0.14206865"
+
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleOpenDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: J2ME-Loader-APK
+          path: app/build/outputs/apk/open/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
+          
