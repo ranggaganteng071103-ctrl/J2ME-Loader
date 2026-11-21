@@ -25,12 +25,15 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android NDK
+      - name: Install Android SDK packages
         run: |
-          sdkmanager "platforms;android-37" "ndk;29.0.14206865"
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
+          yes | "$SDKMANAGER" --licenses
+          "$SDKMANAGER" --install \
+            "platforms;android-34" \
+            "build-tools;34.0.0" \
+            "ndk;22.1.7171670"
 
       - name: Build APK
         run: |
@@ -44,4 +47,3 @@ jobs:
           path: app/build/outputs/apk/open/debug/*.apk
           if-no-files-found: error
           retention-days: 7
-          
